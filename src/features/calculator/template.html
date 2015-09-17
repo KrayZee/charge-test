@@ -1,0 +1,74 @@
+<div class="calculator">
+    <form class="calculator__form form">
+        <div class="form-group">
+            <label>Vehicle type</label>
+
+            <div class="form__radio-group input-group">
+                <label>
+                    <input type="radio" ng-model="inputData.vehicleType" value="0" disabled />
+                    <!-- TODO: Replace to icon -->
+                    <i class="vehicle-icon vehicle-icon-bus">Bus</i>
+                </label>
+
+                <label>
+                    <input type="radio" ng-model="inputData.vehicleType" value="1" checked />
+                    <!-- TODO: Replace to icon -->
+                    <i class="vehicle-icon vehicle-icon-truck">Truck</i>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Truck weight</label>
+
+                <div class="form__radio-group input-group">
+                    <label>
+                        <input type="radio" ng-model="inputData.truckWeight" value="3.5" /> 3.5
+                    </label>
+
+                    <label>
+                        <input type="radio" ng-model="inputData.truckWeight" value="5.5" checked /> 5.5
+                    </label>
+
+                    <label>
+                        <input type="radio" ng-model="inputData.truckWeight" value="9.5" checked /> 9.5
+                    </label>
+
+                    <label>
+                        <input type="radio" ng-model="inputData.truckWeight" value="26.0" checked /> 26.0
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="calculator-country">Country</label>
+
+            <select id="calculator-country"
+                    class="form-control"
+                    ng-model="inputData.country"
+                    ng-options="countries"></select>
+
+            <div class="form-group">
+                <label for="calculator-diesel-price">Diesel price</label>
+
+                <input type="text" id="calculator-diesel-price" class="form-control" disabled
+                       ng-model="inputData.dieselPrice" data-model-suffix="$/l" />
+            </div>
+
+            <div class="form-group">
+                <label for="calculator-electricity-price">Electricity price</label>
+
+                <input type="text" id="calculator-electricity-price" class="form-control" disabled
+                       ng-model="inputData.electricityPrice" data-model-suffix="Cents/kWh" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="calculator-one-time-subsidy">One time subsidy</label>
+
+                <input type="text" id="calculator-one-time-subsidy" class="form-control" disabled
+                       ng-model="inputData.oneTimeSubsidy" data-model-prefix="$" />
+            </div>
+        </div>
+    </form>
+</div>
