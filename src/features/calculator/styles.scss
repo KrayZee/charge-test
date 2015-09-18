@@ -1,0 +1,58 @@
+@import url(https://fonts.googleapis.com/css?family=Muli:400,700);
+
+@import "./form";
+@import "./summary";
+
+$color-orange: #ed7d31;
+
+.clearfix {
+  &:before,
+  &:after {
+    content: " ";
+    display: table;
+  }
+  &:after { clear: both; }
+}
+
+.calculator {
+  width: 1048px;
+  margin: 30px auto;
+  font-family: 'Muli', sans-serif;
+  font-size: 14px;
+
+  * { box-sizing: border-box; }
+
+  @extend .clearfix;
+}
+
+.calculator__form-tab {
+  width: 480px;
+  padding: 0 66px 0 44px;
+  float: left;
+}
+
+.calculator__summary-tab {
+  width: 568px;
+  float: left;
+}
+
+.vehicle-icon {
+  display: inline-block;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  font-size: 0;
+}
+
+.vehicle-icon-bus {
+  background-image: url(bus.gif);
+  width: 52px;
+  height: 21px;
+}
+
+.vehicle-icon-truck {
+  background-image: url(truck.gif);
+  width: 49px;
+  height: 26px;
+}
+
+.charge-truck__name { color: $color-orange; }

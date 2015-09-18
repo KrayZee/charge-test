@@ -1,0 +1,47 @@
+.calculator-summary {}
+
+.calculator-summary__info {
+  th, td {
+    padding: 20px 10px;
+  }
+
+  tr {
+    th, td { border-bottom: solid #d5d5d5 1px; }
+
+    &:last-child { th, td { border-bottom: 0; } }
+    &:first-child { th, td { padding-top: 10px; } }
+  }
+
+  th { font-weight: normal; }
+  td { font-weight: bold; font-size: 1.1em; }
+  td > span { position: relative; }
+  td:last-child { text-align: right; }
+}
+
+.calculator-summary__info-vs {
+  font-size: 1.5em;
+  line-height: 1;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+td.calculator-summary__info-vs {
+  @extend .calculator-summary__title-vs;
+}
+
+.calculator-summary__title-button {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  font-size: 0.6em;
+  font-weight: normal;
+  color: #d3d3d3;
+}
+
+.calculator-summary__info-payback-period {
+  @extend .charge-truck__name;
+}
+
+.calculator-summary__info-total-saving {
+  @extend .calculator-summary__info-payback-period;
+}

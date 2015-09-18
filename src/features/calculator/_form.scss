@@ -1,0 +1,79 @@
+.calculator-form {
+  label { font-weight: normal; }
+}
+
+.calculator-form__field {
+  $child-field-padding: 12px;
+
+  margin-top: 10px;
+  &:first-child { margin-top: 0; }
+
+  & & .calculator-form__label {
+    padding-left: $child-field-padding;
+  }
+
+  & & & .calculator-form__label {
+    padding-left: $child-field-padding * 2;
+  }
+
+  @extend .clearfix;
+}
+
+.calculator-form__label {
+  float: left;
+  width: 175px;
+  padding-right: 10px;
+}
+
+.calculator-form__control {
+  width: 194px;
+}
+
+input.calculator-form__control {
+  text-align: right;
+}
+
+input, select, textarea {
+  &.calculator-form__control {
+    border: solid black 2px;
+    line-height: 20px;
+
+    &:disabled {
+      border-color: #bababa;
+      background-color: #fff;
+    }
+  }
+}
+
+.calculator-form__radio-group {
+  display: table;
+
+  input[type=radio] {
+    &:not(:checked),
+    &:checked {
+      position: absolute;
+      left: -9999px;
+    }
+
+    & + label {
+      display: table-cell;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    &:checked + label {
+      font-weight: bold;
+    }
+
+    &:not(:checked),
+    &:disabled {
+      & + label {
+        opacity: 0.4;
+      }
+    }
+
+    &:disabled + label {
+      cursor: not-allowed;
+    }
+  }
+}
