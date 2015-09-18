@@ -14,6 +14,7 @@
 
   & & & .calculator-form__label {
     padding-left: $child-field-padding * 2;
+    font-style: italic;
   }
 
   @extend .clearfix;
@@ -37,13 +38,17 @@ input, select, textarea {
   &.calculator-form__control {
     border: solid black 2px;
     line-height: 20px;
+    padding: 2px 5px;
 
     &:disabled {
       border-color: #bababa;
       background-color: #fff;
+      color: #cacaca;
     }
   }
 }
+
+select.calculator-form__control { padding: 2px 0 3px; }
 
 .calculator-form__radio-group {
   display: table;

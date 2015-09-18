@@ -1,8 +1,11 @@
 .calculator-summary {}
 
 .calculator-summary__info {
+  border-spacing: 0;
+
   th, td {
     padding: 20px 10px;
+    text-align: left;
   }
 
   tr {
@@ -36,6 +39,7 @@ td.calculator-summary__info-vs {
   font-size: 0.6em;
   font-weight: normal;
   color: #d3d3d3;
+  text-decoration: none;
 }
 
 .calculator-summary__info-payback-period {
