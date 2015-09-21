@@ -9,17 +9,17 @@ var POSITION_AFTER = 1;
  * @returns {{require: string, restrict: string, scope: boolean, link: link}}
  */
 function inputAddon(attrName, addonPosition) {
-    function removeAddon(value) {
+    function removeAddon(value, addonText) {
         if (!value) return value;
 
         switch (addonPosition) {
             case POSITION_BEFORE:
                 return value.indexOf(addonText) == 0
-                    ? value.replace(addonText, '') : value;
+                    ? value.replace(addonText, '') : undefined;
 
             case POSITION_AFTER:
                 return value.lastIndexOf(addonText) == value.length - addonText.length
-                    ? value.substring(0, value.length - addonText.length) : value;
+                    ? value.substring(0, value.length - addonText.length) : undefined;
 
             default: return value;
         }
@@ -33,7 +33,7 @@ function inputAddon(attrName, addonPosition) {
             var addonText = attr[attrName];
 
             modelController.$parsers.push(function (value) {
-                return removeAddon(value);
+                return removeAddon(value, addonText);
             });
 
             modelController.$formatters.push(function (value) {

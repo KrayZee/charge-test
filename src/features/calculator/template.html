@@ -6,13 +6,15 @@
 
                 <div class="calculator-form__control calculator-form__radio-group input-group">
                     <input type="radio" id="calculator-vehicle-type-0"
-                           ng-model="calculator.formData.vehicleType" ng-value="0" disabled />
+                           ng-model="calculator.formData.vehicleType"
+                           ng-change="calculator.updateSummary()" ng-value="0" disabled />
                     <label for="calculator-vehicle-type-0">
                         <i class="vehicle-icon vehicle-icon-bus">Bus</i>
                     </label>
 
                     <input type="radio" id="calculator-vehicle-type-1"
-                           ng-model="calculator.formData.vehicleType" ng-value="1" />
+                           ng-model="calculator.formData.vehicleType"
+                           ng-change="calculator.updateSummary()" ng-value="1" />
                     <label for="calculator-vehicle-type-1">
                         <i class="vehicle-icon vehicle-icon-truck">Truck</i>
                     </label>
@@ -23,19 +25,23 @@
 
                     <div class="calculator-form__control calculator-form__radio-group input-group">
                         <input type="radio" id="calculator-truck-weight-0"
-                               ng-model="calculator.formData.truckWeight" ng-value="3.5" />
+                               ng-model="calculator.formData.truckWeight"
+                               ng-change="calculator.updateSummary()" ng-value="3.5" />
                         <label for="calculator-truck-weight-0">3.5</label>
 
                         <input type="radio" id="calculator-truck-weight-1"
-                               ng-model="calculator.formData.truckWeight" ng-value="5.5" />
+                               ng-model="calculator.formData.truckWeight"
+                               ng-change="calculator.updateSummary()" ng-value="5.5" />
                         <label for="calculator-truck-weight-1">5.5</label>
 
                         <input type="radio" id="calculator-truck-weight-2"
-                               ng-model="calculator.formData.truckWeight" ng-value="9.5" />
+                               ng-model="calculator.formData.truckWeight"
+                               ng-change="calculator.updateSummary()" ng-value="9.5" />
                         <label for="calculator-truck-weight-2">9.5</label>
 
                         <input type="radio" id="calculator-truck-weight-3"
-                               ng-model="calculator.formData.truckWeight" ng-value="26.0" />
+                               ng-model="calculator.formData.truckWeight"
+                               ng-change="calculator.updateSummary()" ng-value="26.0" />
                         <label for="calculator-truck-weight-3">26.0</label>
                     </div>
                 </div>
@@ -46,34 +52,43 @@
 
                 <select id="calculator-country" class="calculator-form__control"
                         ng-model="calculator.formData.country"
+                        ng-change="calculator.updateSummary()"
                         ng-options="country.name for country in calculator.countries"></select>
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-diesel-price">Diesel price</label>
 
                     <input type="text" id="calculator-diesel-price" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.dieselPrice" data-input-suffix="$/l" />
+                           ng-model="calculator.formData.dieselPrice"
+                           ng-change="calculator.updateSummary()"
+                           data-input-number data-input-suffix="$/l" />
                 </div>
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-electricity-price">Electricity price</label>
 
                     <input type="text" id="calculator-electricity-price" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.electricityPrice" data-input-suffix="Cents/kWh" />
+                           ng-model="calculator.formData.electricityPrice"
+                           ng-change="calculator.updateSummary()"
+                           data-input-number data-input-suffix="Cents/kWh" />
                 </div>
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-one-time-subsidy">One time subsidy</label>
 
                     <input type="text" id="calculator-one-time-subsidy" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.oneTimeSubsidy" data-input-prefix="$" />
+                           ng-model="calculator.formData.oneTimeSubsidy"
+                           ng-change="calculator.updateSummary()"
+                           data-input-number data-input-prefix="$" />
                 </div>
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-annual-subsidy">Annual subsidy</label>
 
                     <input type="text" id="calculator-annual-subsidy" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.annualSubsidy" data-input-prefix="$" />
+                           ng-model="calculator.formData.annualSubsidy"
+                           ng-change="calculator.updateSummary()"
+                           data-input-number data-input-prefix="$" />
                 </div>
             </div>
 
@@ -82,27 +97,33 @@
 
                 <input type="checkbox"
                        id="calculator-zero-emission"
-                       ng-model="calculator.formData.zeroEmission" />
+                       ng-model="calculator.formData.zeroEmission"
+                       ng-change="calculator.updateSummary()" />
             </div>
 
             <div class="calculator-form__field">
                 <label class="calculator-form__label" for="calculator-daily-range">Daily range</label>
 
                 <input type="text" id="calculator-daily-range" class="calculator-form__control"
-                       ng-model="calculator.formData.dailyRange" data-input-suffix="km" />
+                       ng-model="calculator.formData.dailyRange"
+                       ng-change="calculator.updateSummary()"
+                       data-input-number data-input-suffix="km" />
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-urban-time">Urban time</label>
 
                     <input type="text" id="calculator-urban-time" class="calculator-form__control"
-                           ng-model="calculator.formData.urbanTime" data-input-suffix="%" />
+                           ng-model="calculator.formData.urbanTime"
+                           ng-change="calculator.updateSummary()"
+                           data-input-percent data-input-suffix="%" />
                 </div>
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-working-days-per-year">Working days per year</label>
 
                     <input type="text" id="calculator-working-days-per-year" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.workingDaysPerYear" />
+                           ng-model="calculator.formData.workingDaysPerYear"
+                           ng-change="calculator.updateSummary()" />
                 </div>
 
                 <div class="calculator-form__field">
@@ -110,15 +131,18 @@
 
                     <div class="calculator-form__control calculator-form__radio-group input-group">
                         <input type="radio" id="calculator-recharging-ability-0"
-                               ng-model="calculator.formData.rechargingAbility" ng-value="0" />
+                               ng-model="calculator.formData.rechargingAbility"
+                               ng-change="calculator.updateSummary()" ng-value="0" />
                         <label for="calculator-recharging-ability-0">No</label>
 
                         <input type="radio" id="calculator-recharging-ability-1"
-                               ng-model="calculator.formData.rechargingAbility" ng-value="1" />
+                               ng-model="calculator.formData.rechargingAbility"
+                               ng-change="calculator.updateSummary()" ng-value="1" />
                         <label for="calculator-recharging-ability-1">Night only</label>
 
                         <input type="radio" id="calculator-recharging-ability-2"
-                               ng-model="calculator.formData.rechargingAbility" ng-value="2" checked />
+                               ng-model="calculator.formData.rechargingAbility"
+                               ng-change="calculator.updateSummary()" ng-value="2" checked />
                         <label for="calculator-recharging-ability-2">Intraday</label>
                     </div>
 
@@ -126,8 +150,10 @@
                         <label class="calculator-form__label" for="calculator-recharging-frequency">every</label>
 
                         <input type="text" id="calculator-recharging-frequency" class="calculator-form__control"
-                               ng-disabled="calculator.formData.rechargingAbility !== 2"
-                               ng-model="calculator.formData.rechargingFrequency" data-input-suffix="km" />
+                               ng-disabled="calculator.formData.rechargingAbility === 0"
+                               ng-model="calculator.formData.rechargingFrequency"
+                               ng-change="calculator.updateSummary()"
+                               data-input-number data-input-suffix="km" />
                     </div>
                 </div>
             </div>
@@ -137,11 +163,13 @@
 
                 <div class="calculator-form__control calculator-form__radio-group input-group">
                     <input type="radio" id="calculator-purchase-option-0"
-                           ng-model="calculator.formData.purchaseOption" ng-value="0" />
+                           ng-model="calculator.formData.purchaseOption"
+                           ng-change="calculator.updateSummary()" ng-value="0" />
                     <label for="calculator-purchase-option-0">One time payment</label>
 
                     <input type="radio" id="calculator-purchase-option-1"
-                           ng-model="calculator.formData.purchaseOption" ng-value="1" />
+                           ng-model="calculator.formData.purchaseOption"
+                           ng-change="calculator.updateSummary()" ng-value="1" />
                     <label for="calculator-purchase-option-1">Leasing</label>
                 </div>
 
@@ -150,7 +178,9 @@
 
                     <input type="text" id="calculator-term" class="calculator-form__control"
                            ng-disabled="calculator.formData.purchaseOption !== 1"
-                           ng-model="calculator.formData.term" data-input-suffix="years" />
+                           ng-model="calculator.formData.term"
+                           ng-change="calculator.updateSummary()"
+                           data-input-number data-input-suffix="years" />
                 </div>
 
                 <div class="calculator-form__field">
@@ -158,7 +188,9 @@
 
                     <input type="text" id="calculator-interest-rate" class="calculator-form__control"
                            ng-disabled="calculator.formData.purchaseOption !== 1"
-                           ng-model="calculator.formData.interestRate" data-input-suffix="%" />
+                           ng-model="calculator.formData.interestRate"
+                           ng-change="calculator.updateSummary()"
+                           data-input-percent data-input-suffix="%" />
                 </div>
 
                 <div class="calculator-form__field">
@@ -166,7 +198,9 @@
 
                     <input type="text" id="calculator-upfront-payment" class="calculator-form__control"
                            ng-disabled="calculator.formData.purchaseOption !== 1"
-                           ng-model="calculator.formData.upfrontPayment" data-input-suffix="%" />
+                           ng-model="calculator.formData.upfrontPayment"
+                           ng-change="calculator.updateSummary()"
+                           data-input-percent data-input-suffix="%" />
                 </div>
             </div>
         </form>

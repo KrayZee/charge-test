@@ -5,7 +5,7 @@
 .calculator-form__field {
   $child-field-padding: 12px;
 
-  margin-top: 10px;
+  margin-top: 7px;
   &:first-child { margin-top: 0; }
 
   & & .calculator-form__label {
@@ -23,7 +23,7 @@
 .calculator-form__label {
   float: left;
   width: 175px;
-  padding-right: 10px;
+  padding: 4px 10px 4px 0;
 }
 
 .calculator-form__control {
@@ -52,6 +52,7 @@ select.calculator-form__control { padding: 2px 0 3px; }
 
 .calculator-form__radio-group {
   display: table;
+  padding: 5px 0;
 
   input[type=radio] {
     &:not(:checked),

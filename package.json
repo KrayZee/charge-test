@@ -22,7 +22,8 @@
   "dependencies": {
     "angular": "^1.4.6",
     "angular-chart.js": "^0.8.4",
-    "angular-ui-router": "^0.2.15"
+    "angular-ui-router": "^0.2.15",
+    "lodash": "^3.10.1"
   },
   "devDependencies": {
     "autoprefixer": "^6.0.3",
