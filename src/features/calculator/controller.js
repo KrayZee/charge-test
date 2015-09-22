@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Color from 'color';
 
 import Country from '../../entities/country';
 import CalculatorFormData from '../../entities/calculatorFormData';
@@ -8,12 +9,16 @@ import PurchaseOptions from '../../entities/purchaseOptions';
 
 var CURRENT_YEAR = new Date().getFullYear();
 
+var ICE_COLOR = new Color('#bfbfbf');
+var CHARGE_COLOR = new Color('#ed7d31');
+
 /**
  * @param {CalculatorFormData} formData
  * @returns {number}
  */
 function getChargeTruckCost(formData) {
-    return 100000;
+    // TODO: implements charge truck costs calculating
+    return 80000;
 }
 
 /**
@@ -21,9 +26,17 @@ function getChargeTruckCost(formData) {
  * @returns {number}
  */
 function getChargePOL(formData) {
-    return getChargeTruckCost(formData) * 0.05;
+    // TODO: implements charge truck POL calculating
+    return getChargeTruckCost(formData) * 0.005;
 }
 
+/**
+ * @param {number} truckCost
+ * @param {number} upfrontPayment
+ * @param {number} term
+ * @param {number} interestRate
+ * @returns {number}
+ */
 function getLeasingYearPayment(truckCost, upfrontPayment, term, interestRate) {
     // calculate leasing year payment as annuity payment
     // https://en.wikipedia.org/wiki/Annuity
@@ -35,13 +48,9 @@ function getLeasingYearPayment(truckCost, upfrontPayment, term, interestRate) {
 
 /**
  * @param {CalculatorFormData} formData
- * @returns {double[]}
+ * @returns {number[]}
  */
 function getChargeAnnualCosts(formData) {
-    if (formData.term === undefined) return [];
-    if (formData.purchaseOption === undefined) return [];
-    if (formData.upfrontPayment === undefined) return [];
-
     var truckCost = getChargeTruckCost(formData);
     var polCost = getChargePOL(formData);
     var costs = new Array(formData.term + 1);
@@ -64,8 +73,18 @@ function getChargeAnnualCosts(formData) {
     return costs;
 }
 
+function getAnalogueAnnualCost(formData) {
+    var truckCost = 6000;
+    var polCost = truckCost * 2;
+    var costs = new Array(formData.term + 1);
+
+    costs.fill(polCost);
+    costs[0] = costs[0] + truckCost;
+    return costs;
+}
+
 export default class CalculatorController {
-    constructor($scope) {
+    constructor() {
         this.countries = [
             new Country('United Kingdom', 'uk')
         ];
@@ -77,6 +96,8 @@ export default class CalculatorController {
         this.analogueTruck = {
             name: 'Isuzu NPR 6t'
         };
+
+        this.summary = {};
 
         this.formData = new CalculatorFormData();
         this.formData.vehicleType = 1;
@@ -95,28 +116,67 @@ export default class CalculatorController {
         this.formData.purchaseOption = 1;
         this.formData.term = 7;
         this.formData.interestRate = 0.10;
-        this.formData.upfrontPayment = 0.30;
+        this.formData.upfrontPayment = 0.45;
 
         this.charts = {
             annualCosts: {
-                data: [[0, 0, 0], [0, 0, 0]],
-                labels: [0, 1, 2]
+                data: [
+                    [0, 0, 0],
+                    [0, 0, 0]
+                ],
+                labels: [0, 1, 2],
+                series: ['I.C.E.', 'Charge'],
+                colours: [
+                    {
+                        fillColor: ICE_COLOR.hexString(),
+                        highlightFill: ICE_COLOR.lighten(0.15).hexString()
+                    },
+                    {
+                        fillColor: CHARGE_COLOR.hexString(),
+                        highlightFill: CHARGE_COLOR.lighten(0.15).hexString()
+                    }
+                ],
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            },
+            savings: {
+                data: [
+                    [0, 0, 0],
+                    [0, 0, 0]
+                ],
+                labels: [0, 1, 2],
+                series: ['I.C.E.', 'Charge'],
+                colours: [
+                    {
+                        fillColor: ICE_COLOR.hexString(),
+                        highlightFill: ICE_COLOR.lighten(0.15).hexString()
+                    },
+                    {
+                        fillColor: CHARGE_COLOR.hexString(),
+                        highlightFill: CHARGE_COLOR.lighten(0.15).hexString()
+                    }
+                ]
             }
         };
 
-        this.updateSummary();
+        setTimeout(() => this.updateSummary(), 0);
     }
 
     updateSummary() {
+        if (this.formData.term === null) return;
+        if (this.formData.purchaseOption === null) return;
+        if (this.formData.upfrontPayment === null) return;
+
+        let analogueAnnualCost = getAnalogueAnnualCost(this.formData);
         let chargeAnnualCost = getChargeAnnualCosts(this.formData);
 
-        this.charts.annualCosts = {
-            data: [
-                chargeAnnualCost
-            ],
-            labels: _.range(chargeAnnualCost.length)
-        }
+        this.charts.annualCosts.data[0] = analogueAnnualCost.map(amount => amount / 1000);
+        this.charts.annualCosts.data[1] = chargeAnnualCost.map(amount => amount / 1000);
+        this.charts.annualCosts.labels = _.range(chargeAnnualCost.length);
+
+        this.summary.paybackPeriod =
+            Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0);
     }
 }
-
-CalculatorController.$inject = ['$scope'];

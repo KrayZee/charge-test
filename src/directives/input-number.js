@@ -19,7 +19,7 @@ function inputNumber($filter) {
         link: function(scope, element, attr, modelController) {
             modelController.$parsers.push(function (value) {
                 var number = parseInt(value);
-                return isNaN(number) ? undefined : number / 100;
+                return isNaN(number) ? undefined : number;
             });
 
             modelController.$formatters.push(function (value) {

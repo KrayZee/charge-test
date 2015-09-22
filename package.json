@@ -23,6 +23,8 @@
     "angular": "^1.4.6",
     "angular-chart.js": "^0.8.4",
     "angular-ui-router": "^0.2.15",
+    "chart.js": "^1.0.2",
+    "color": "^0.10.1",
     "lodash": "^3.10.1"
   },
   "devDependencies": {
@@ -34,6 +36,7 @@
     "extract-text-webpack-plugin": "*",
     "file-loader": "*",
     "html-webpack-plugin": "*",
+    "json-loader": "^0.5.3",
     "node-sass": "^3.3.2",
     "postcss-loader": "*",
     "raw-loader": "*",
