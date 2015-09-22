@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A charge test job",
   "scripts": {
+    "watch": "webpack --watch --hot --inline --progress",
     "build": "webpack --config webpack.build.js --bail -p",
     "dev": "webpack-dev-server --history-api-fallback --hot --inline --progress"
   },
@@ -22,7 +23,6 @@
   "dependencies": {
     "angular": "^1.4.6",
     "angular-chart.js": "^0.8.4",
-    "angular-ui-router": "^0.2.15",
     "chart.js": "^1.0.2",
     "color": "^0.10.1",
     "lodash": "^3.10.1"

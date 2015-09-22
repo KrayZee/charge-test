@@ -47,11 +47,11 @@ module.exports = function makeWebpackConfig (options) {
     } else {
         config.output = {
             // Absolute output directory
-            path: __dirname + '/public',
+            path: __dirname + '/server/static',
 
             // Output path from the view of the page
             // Uses webpack-dev-server in development
-            publicPath: BUILD ? '/' : 'http://localhost:8080/',
+            publicPath: BUILD ? '/static/' : 'http://localhost:8080/static/',
 
             // Filename for entry points
             // Only adds hash in build mode
@@ -207,13 +207,14 @@ module.exports = function makeWebpackConfig (options) {
         })
     ];
 
-    // Skip rendering index.html in test mode
+    // Skip rendering layput.html in test mode
     if (!TEST) {
         // Reference: https://github.com/ampedandwired/html-webpack-plugin
-        // Render index.html
+        // Render layout.html
         config.plugins.push(
             new HtmlWebpackPlugin({
-                template: './src/index.html',
+                template: './src/layout.html',
+                filename: '../templates/layout.html',
                 inject: 'body',
                 minify: BUILD
             })
@@ -243,7 +244,7 @@ module.exports = function makeWebpackConfig (options) {
      * Reference: http://webpack.github.io/docs/webpack-dev-server.html
      */
     config.devServer = {
-        contentBase: './public',
+        contentBase: './server/static',
         stats: {
             modules: false,
             cached: false,

@@ -1,4 +1,6 @@
 node_modules
 public
 build
+server/static
+server/templates/layout.html
 .idea
