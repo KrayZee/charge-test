@@ -9,54 +9,54 @@ import PurchaseOptions from './purchaseOptions';
 export default class CalculatorFormData {
     constructor() {
         /** @member {?VehicleType} CalculatorFormData#vehicleType */
-        this.vehicleType = null;
+        this.vehicleType = undefined;
 
-        /** @member {Number} CalculatorFormData#truckWeight */
+        /** @member {double|undefined} CalculatorFormData#truckWeight */
         this.truckWeight = 0;
 
         /** @member {?Country} CalculatorFormData#country */
-        this.country = null;
+        this.country = undefined;
 
-        /** @member {Number} CalculatorFormData#dieselPrice */
+        /** @member {double|undefined} CalculatorFormData#dieselPrice */
         this.dieselPrice = 0;
 
-        /** @member {Number} CalculatorFormData#electricityPrice */
+        /** @member {double|undefined} CalculatorFormData#electricityPrice */
         this.electricityPrice = 0;
 
-        /** @member {Number} CalculatorFormData#oneTimeSubsidy */
+        /** @member {double|undefined} CalculatorFormData#oneTimeSubsidy */
         this.oneTimeSubsidy = 0;
 
-        /** @member {Number} CalculatorFormData#annualSubsidy */
+        /** @member {double|undefined} CalculatorFormData#annualSubsidy */
         this.annualSubsidy = 0;
 
         /** @member {boolean} CalculatorFormData#zeroEmission */
-        this.zeroEmission = 0;
+        this.zeroEmission = false;
 
-        /** @member {Number} CalculatorFormData#dailyRange */
+        /** @member {double|undefined} CalculatorFormData#dailyRange */
         this.dailyRange = 0;
 
-        /** @member {Number} CalculatorFormData#urbanTime */
+        /** @member {int|undefined} CalculatorFormData#urbanTime */
         this.urbanTime = 0;
 
-        /** @member {Number} CalculatorFormData#workingDaysPerYear */
+        /** @member {int|undefined} CalculatorFormData#workingDaysPerYear */
         this.workingDaysPerYear = 0;
 
         /** @member {RechargingAbility} CalculatorFormData#rechargingAbility */
         this.rechargingAbility = RechargingAbility.NO;
 
-        /** @member {Number} CalculatorFormData#rechargingFrequency */
+        /** @member {double|undefined} CalculatorFormData#rechargingFrequency */
         this.rechargingFrequency = 0;
 
-        /** @member {?PurchaseOptions} CalculatorFormData#purchaseOption */
-        this.purchaseOption = null;
+        /** @member {PurchaseOptions} CalculatorFormData#purchaseOption */
+        this.purchaseOption = PurchaseOptions.ONE_TIME_PAYMENT;
 
-        /** @member {Number} CalculatorFormData#term */
+        /** @member {int|undefined} CalculatorFormData#term */
         this.term = 0;
 
-        /** @member {Number} CalculatorFormData#interestRate */
+        /** @member {int|undefined} CalculatorFormData#interestRate */
         this.interestRate = 0;
 
-        /** @member {Number} CalculatorFormData#upfrontPayment */
+        /** @member {int|undefined} CalculatorFormData#upfrontPayment */
         this.upfrontPayment = 0;
     }
 }

@@ -224,7 +224,7 @@
 
             <tr class="">
                 <th>Payback period</th>
-                <td class="calculator-summary__info-payback-period" ng-bind-template="{{calculator.summary.paybackPeriod | number : 2}} years"></td>
+                <td class="calculator-summary__info-payback-period" ng-bind-template="{{calculator.summary.paybackPeriod | floatingNumber : 2}} years"></td>
                 <td></td>
                 <th>Total saving</th>
                 <td class="calculator-summary__info-total-saving">{{calculator.summary.totalSaving | currency : "$ "}}</td>

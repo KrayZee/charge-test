@@ -2,6 +2,7 @@
 
 .calculator-summary__info {
   border-spacing: 0;
+  width: 100%;
 
   th, td {
     padding: 20px 10px;
@@ -48,4 +49,31 @@ td.calculator-summary__info-vs {
 
 .calculator-summary__info-total-saving {
   @extend .calculator-summary__info-payback-period;
+}
+
+.chart-container {
+  position: relative;
+
+  .annualcosts-legend {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: .7em;
+    color: #8f8f8f;
+
+    & > li {
+      margin: 4px 0;
+
+      & > span {
+        display: inline-block;
+        width: .6em;
+        height: .6em;
+        margin-top: -.6em;
+        margin-right: .3em;
+      }
+    }
+  }
 }

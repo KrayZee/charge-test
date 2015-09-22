@@ -9,81 +9,203 @@ function CreateCharts(ChartJs) {
     ChartJs.Chart.types.Bar.extend({
         name: "AnnualCosts",
         defaults: {
+            animationEasing: 'easeInOutQuad',
             barDatasetSpacing : 0,
             barShowStroke : false,
-            diffWidth: 0.2,
+            diffWidth: 0.25,
             diffPositiveColor: '#72AC45',
-            diffNegativeColor: '#FE0002'
+            diffNegativeColor: '#FE0002',
+            barValueSpacing: 15,
+            scaleShowHorizontalLines: false,
+            scaleShowVerticalLines: false,
+            scaleLineColor: "black",
+            scaleFontSize: 11,
+            showTooltips: false,
+            legendTemplate : `<ul class="<%=name.toLowerCase()%>-legend">
+                <% for (var i=0; i<datasets.length; i++){%>
+                <li><span style="background-color:<%=datasets[i].fillColor%>"></span>
+                <%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%>
+                <li><span style="background-color:<%=options.diffPositiveColor%>"></span>Positive difference</li>
+                <li><span style="background-color:<%=options.diffNegativeColor%>"></span>Negative difference</li>
+                </ul>`
         },
-        initialize:  function(data){
 
-            //Expose options as a scope variable here so we can access it in the ScaleClass
+        initialize: function(data) {
+            // expose options as a scope variable here so we can access it in the ScaleClass
             var options = this.options;
 
             this.ScaleClass = ChartJs.Chart.Scale.extend({
-                offsetGridLines : true,
-                calculateBarX : function(datasetCount, datasetIndex, barIndex){
-                    //Reusable method for calculating the xPosition of a given bar based on datasetIndex & width of the bar
+                offsetGridLines: true,
+                calculateBarX: function(datasetCount, datasetIndex, barIndex) {
+                    // reusable method for calculating the xPosition of a given bar
+                    // based on datasetIndex & width of the bar
                     var xWidth = this.calculateBaseWidth(),
                         xAbsolute = this.calculateX(barIndex) - (xWidth/2),
                         barWidth = this.calculateBarWidth(datasetCount);
 
-                    return xAbsolute + (barWidth * datasetIndex) + (datasetIndex * options.barDatasetSpacing) + barWidth/2;
+                    return xAbsolute + (barWidth * datasetIndex) +
+                        (datasetIndex * options.barDatasetSpacing) + barWidth/2;
                 },
-                calculateBaseWidth : function(){
-                    return (this.calculateX(1) - this.calculateX(0)) - (2*options.barValueSpacing);
+                calculateBaseWidth: function() {
+                    return (this.calculateX(1) - this.calculateX(0)) - (2 * options.barValueSpacing);
                 },
-                calculateBarWidth : function(datasetCount){
-                    //The padding between datasets is to the right of each bar, providing that there are more than 1 dataset
+                calculateBarWidth: function(datasetCount) {
+                    // the padding between datasets is to the right of each bar,
+                    // providing that there are more than 1 dataset
                     var baseWidth = this.calculateBaseWidth() - ((datasetCount - 1) * options.barDatasetSpacing);
 
                     return (baseWidth / datasetCount);
+                },
+
+                draw: function() {
+                    var ctx = this.ctx,
+                        yLabelGap = (this.endPoint - this.startPoint) / this.steps,
+                        xStart = Math.round(this.xScalePaddingLeft);
+
+                    if (this.display) {
+                        ctx.fillStyle = this.textColor;
+                        ctx.font = this.font;
+
+                        helpers.each(this.yLabels, function(labelString, index) {
+                            var yLabelCenter = this.endPoint - (yLabelGap * index),
+                                linePositionY = Math.round(yLabelCenter),
+                                drawHorizontalLine = this.showHorizontalLines;
+
+                            ctx.textAlign = "right";
+                            ctx.textBaseline = "middle";
+                            if (this.showLabels){
+                                ctx.fillText(labelString, xStart - 10, yLabelCenter);
+                            }
+
+                            // This is X axis, so draw it
+                            if (index === 0 && !drawHorizontalLine) {
+                                drawHorizontalLine = true;
+                            }
+
+                            if (drawHorizontalLine){
+                                ctx.beginPath();
+                            }
+
+                            if (index > 0){
+                                // This is a grid line in the centre, so drop that
+                                ctx.lineWidth = this.gridLineWidth;
+                                ctx.strokeStyle = this.gridLineColor;
+                            } else {
+                                // This is the first line on the scale
+                                ctx.lineWidth = this.lineWidth;
+                                ctx.strokeStyle = this.lineColor;
+                            }
+
+                            linePositionY += helpers.aliasPixel(ctx.lineWidth);
+
+                            if (drawHorizontalLine) {
+                                ctx.moveTo(xStart, linePositionY);
+                                ctx.lineTo(this.width, linePositionY);
+                                ctx.stroke();
+                                ctx.closePath();
+                            }
+
+                        }, this);
+
+                        helpers.each(this.xLabels, function(label, index) {
+                            var xPos = this.calculateX(index) + helpers.aliasPixel(this.lineWidth),
+                            // Check to see if line/bar here and decide where to place the line
+                                linePos = this.calculateX(index - (this.offsetGridLines ? 0.5 : 0))
+                                    + helpers.aliasPixel(this.lineWidth),
+                                isRotated = (this.xLabelRotation > 0),
+                                drawVerticalLine = this.showVerticalLines;
+
+                            // This is Y axis, so draw it
+                            if (drawVerticalLine){
+                                ctx.beginPath();
+                            }
+
+                            if (index > 0){
+                                // This is a grid line in the centre, so drop that
+                                ctx.lineWidth = this.gridLineWidth;
+                                ctx.strokeStyle = this.gridLineColor;
+                            } else {
+                                // This is the first line on the scale
+                                ctx.lineWidth = this.lineWidth;
+                                ctx.strokeStyle = this.lineColor;
+                            }
+
+                            if (drawVerticalLine){
+                                ctx.moveTo(linePos,this.endPoint);
+                                ctx.lineTo(linePos,this.startPoint - 3);
+                                ctx.stroke();
+                                ctx.closePath();
+                            }
+
+
+                            ctx.lineWidth = this.lineWidth;
+                            ctx.strokeStyle = this.lineColor;
+
+                            ctx.save();
+                            ctx.translate(xPos,(isRotated) ? this.endPoint + 12 : this.endPoint + 8);
+                            ctx.rotate(helpers.radians(this.xLabelRotation)*-1);
+                            ctx.font = this.font;
+                            ctx.textAlign = (isRotated) ? "right" : "center";
+                            ctx.textBaseline = (isRotated) ? "middle" : "top";
+                            ctx.fillText(label, 0, 0);
+                            ctx.restore();
+                        }, this);
+                    }
                 }
             });
 
             this.datasets = [];
 
-            //Set up tooltip events on the chart
-            if (this.options.showTooltips){
-                helpers.bindEvents(this, this.options.tooltipEvents, function(evt){
-                    var activeBars = (evt.type !== 'mouseout') ? this.getBarsAtEvent(evt) : [];
+            // set up tooltip events on the chart
+            if (this.options.showTooltips) {
+                helpers.bindEvents(this, this.options.tooltipEvents, function(evt) {
+                    let activeBars = (evt.type !== 'mouseout') ? this.getBarsAtEvent(evt) : [];
 
                     this.eachBars(function(bar){
                         bar.restore(['fillColor', 'strokeColor']);
                     });
+
                     helpers.each(activeBars, function(activeBar){
                         activeBar.fillColor = activeBar.highlightFill;
                         activeBar.strokeColor = activeBar.highlightStroke;
                     });
+
                     this.showTooltip(activeBars);
                 });
             }
 
-            //Declare the extension of the default point, to cater for the options passed in to the constructor
+            // declare the extension of the default point,
+            // to cater for the options passed in to the constructor
             this.BarClass = ChartJs.Chart.Rectangle.extend({
-                strokeWidth : this.options.barStrokeWidth,
-                showStroke : this.options.barShowStroke,
-                ctx : this.chart.ctx
+                strokeWidth: this.options.barStrokeWidth,
+                showStroke: this.options.barShowStroke,
+                ctx: this.chart.ctx,
+                diff: null
             });
 
-            //Iterate through each of the datasets, and build this into a property of the chart
-            helpers.each(data.datasets,function(dataset,datasetIndex){
+            // declare diff class
+            this.DiffClass = this.BarClass.extend({
+                bar1: null,
+                bar2: null
+            });
 
+            // iterate through each of the datasets,
+            // and build this into a property of the chart
+            helpers.each(data.datasets, function(dataset, datasetIndex) {
                 var datasetObject = {
                     label : dataset.label || null,
                     fillColor : dataset.fillColor,
                     strokeColor : dataset.strokeColor,
-                    bars : [],
-                    diff : []
+                    bars : []
                 };
 
                 this.datasets.push(datasetObject);
 
-                helpers.each(dataset.data,function(dataPoint,index){
-                    //Add a new point for each piece of data, passing any required data to draw.
+                helpers.each(dataset.data, function(dataPoint, dataIndex) {
+                    // add a new point for each piece of data, passing any required data to draw.
                     datasetObject.bars.push(new this.BarClass({
-                        value : dataPoint,
-                        label : data.labels[index],
+                        value: dataPoint,
+                        label: data.labels[dataIndex],
                         datasetLabel: dataset.label,
                         strokeColor : dataset.strokeColor,
                         fillColor : dataset.fillColor,
@@ -91,24 +213,24 @@ function CreateCharts(ChartJs) {
                         highlightStroke : dataset.highlightStroke || dataset.strokeColor
                     }));
 
+                    // add a new diff bar for two paired bars of nearest datasets
+
+                    // skip diff creation for first dataset,
+                    // because there is no another datasets
                     if (datasetIndex < 1) return;
 
-                    //Add a new diff bar for each piece of data, passing any required data to draw.
-                    if (!this.datasets[datasetIndex].diff) this.datasets[datasetIndex].diff = [];
+                    let index = datasetObject.bars.length - 1;
+                    let bar = datasetObject.bars[index];
 
-                    var prevDatasetBars = this.datasets[datasetIndex - 1].bars;
-                    if (prevDatasetBars.length < this.datasets[datasetIndex].diff.length) return;
+                    // skip diff creation when prev dataset has no suitable bar
+                    let prevDatasetBars = this.datasets[datasetIndex - 1].bars;
+                    if (prevDatasetBars.length <= index) return;
 
-                    var prevDatasetValue = prevDatasetBars[this.datasets[datasetIndex].diff.length].value;
-                    var diffValue = prevDatasetValue - dataPoint;
-
-                    this.datasets[datasetIndex].diff.push(new this.BarClass({
-                        value : diffValue,
-                        strokeColor : null,
-                        fillColor : diffValue < 0 ? this.options.diffNegativeColor : this.options.diffPositiveColor
-                    }));
-                },this);
-
+                    bar.diff = new this.DiffClass({
+                        bar1: prevDatasetBars[index],
+                        bar2: bar
+                    });
+                }, this);
             },this);
 
             this.buildScale(data.labels);
@@ -123,135 +245,112 @@ function CreateCharts(ChartJs) {
                 });
                 bar.save();
 
-                var diff = this.datasets[datasetIndex].diff[index];
+                // update state for diff bar
+                var diff = bar.diff;
                 if (!diff) return;
 
-                var prevDatasetBars = this.datasets[datasetIndex - 1].bars;
+                var diffDimensions = this.getDiffDimensions(diff);
+                var diffColor = this.getDiffColor(diff);
 
-                var diffWidth = this.scale.calculateBarWidth(this.datasets.length) * this.options.diffWidth;
-                var diffX = diff.value < 0 ? bar.x - (bar.width + diffWidth) / 2 : bar.x - (bar.width - diffWidth) / 2;
-
-                helpers.extend(diff, {
-                    base: prevDatasetBars[index].y,
-                    width : diffWidth,
-                    x: diffX,
-                    y: bar.y + bar.value
+                helpers.extend(diff, diffDimensions, {
+                    strokeColor: diffColor,
+                    fillColor: diffColor
                 });
                 diff.save();
             }, this);
 
             this.render();
         },
-        eachBars : function(callback){
+
+        /**
+         * @param {DiffClass} diff
+         * @returns {{value: number, width: number, base: *, x: number, y: *}}
+         */
+        getDiffDimensions: function(diff) {
+            let bar1 = diff.bar1, bar2 = diff.bar2;
+            let value = this.getDiffValue(diff);
+            let width = bar1.width * this.options.diffWidth;
+
+            // draw diff on bar1 if bar2.value > bar1.value
+            // draw diff on bar2 if bar1.value > bar2.value
+            let x = value < 0 ? bar2.x - (bar2.width + width) / 2 : bar2.x - (bar2.width - width) / 2;
+
+            return {
+                value: value,
+                width: width,
+                base: bar1.y,
+                x: x,
+                y: bar2.y
+            }
+        },
+
+        /**
+         * @param {DiffClass} diff
+         * @returns {number}
+         */
+        getDiffValue: function(diff) {
+            return diff.bar1.value - diff.bar2.value;
+        },
+
+        /**
+         * @param {DiffClass} diff
+         * @returns {number}
+         */
+        getDiffColor: function(diff) {
+            return this.getDiffValue(diff) < 0
+                ? this.options.diffNegativeColor : this.options.diffPositiveColor;
+        },
+
+        eachBars: function(callback){
             helpers.each(this.datasets,function(dataset, datasetIndex){
                 helpers.each(dataset.bars, callback, this, datasetIndex);
             },this);
         },
-        addData : function(valuesArray,label){
-            //Map the values array for each of the datasets
-            helpers.each(valuesArray, function(value, datasetIndex) {
-                //Add a new point for each piece of data, passing any required data to draw.
-                this.datasets[datasetIndex].bars.push(new this.BarClass({
-                    value : value,
-                    label : label,
-                    x: this.scale.calculateBarX(this.datasets.length, datasetIndex, this.scale.valuesCount+1),
-                    y: this.scale.endPoint,
-                    width : this.scale.calculateBarWidth(this.datasets.length),
-                    base : this.scale.endPoint,
-                    strokeColor : this.datasets[datasetIndex].strokeColor,
-                    fillColor : this.datasets[datasetIndex].fillColor
-                }));
 
-                if (datasetIndex < 1) return;
+        update: function() {
+            this.scale.update();
+            // Reset any highlight colours before updating.
+            helpers.each(this.activeElements, function(activeElement){
+                activeElement.restore(['fillColor', 'strokeColor']);
+            });
 
-                //Add a new diff bar for each piece of data, passing any required data to draw.
-                if (!this.datasets[datasetIndex].diff) this.datasets[datasetIndex].diff = [];
+            this.eachBars(function(bar){
+                bar.save();
+                bar.diff ? bar.diff.save() : null;
 
-                var prevDatasetBars = this.datasets[datasetIndex - 1].bars;
-                if (prevDatasetBars.length < this.datasets[datasetIndex].diff.length) return;
-
-                var prevDatasetValue = prevDatasetBars[this.datasets[datasetIndex].diff.length].value;
-
-                var index = this.datasets[datasetIndex].bars.length - 1;
-                var bar = this.datasets[datasetIndex].bars[index];
-                var diffValue = prevDatasetValue - value;
-                var diffWidth = this.scale.calculateBarWidth(this.datasets.length) * this.options.diffWidth;
-                var diffX = diffValue < 0 ? bar.x - (bar.width + diffWidth) / 2 : bar.x - (bar.width - diffWidth) / 2;
-
-                this.datasets[datasetIndex].diff.push(new this.BarClass({
-                    value : diffValue,
-                    x: diffX,
-                    y: bar.y,
-                    width : diffWidth,
-                    base : prevDatasetBars[index],
-                    strokeColor : null,
-                    fillColor : diffValue < 0 ? this.options.diffNegativeColor : this.options.diffPositiveColor
-                }));
-            },this);
-
-            this.scale.addXLabel(label);
-            //Then re-render the chart.
-            this.update();
+            });
+            this.render();
         },
-        removeData : function(){
-            this.scale.removeXLabel();
-            //Then re-render the chart.
-            helpers.each(this.datasets,function(dataset){
-                dataset.bars.shift();
-                if (this.datasets[datasetIndex].diff.length > 0) dataset.diff.shift();
-            },this);
-            this.update();
-        },
+
         draw: function (ease) {
             var easingDecimal = ease || 1;
             this.clear();
-
-            var ctx = this.chart.ctx;
-
             this.scale.draw(easingDecimal);
 
-            //Draw all the bars for each dataset
+            // draw all the bars for each dataset
             helpers.each(this.datasets, function (dataset, datasetIndex) {
                 helpers.each(dataset.bars, function (bar, index) {
-                    if (bar.hasValue()) {
-                        bar.base = this.scale.endPoint;
-                        //Transition then draw
-                        bar.transition({
-                            x: this.scale.calculateBarX(this.datasets.length, datasetIndex, index),
-                            y: this.scale.calculateY(bar.value),
-                            width: this.scale.calculateBarWidth(this.datasets.length)
-                        }, easingDecimal).draw();
+                    if (!bar.hasValue()) return;
 
-                        if (datasetIndex > 0) {
-                            // todo: move calculation to function
-                            if (!this.datasets[datasetIndex].diff) return;
-                            if (this.datasets[datasetIndex].diff.length < index + 1) return;
+                    bar.base = this.scale.endPoint;
 
-                            var diff = this.datasets[datasetIndex].diff[index];
+                    // transition then draw
+                    bar.transition({
+                        x: this.scale.calculateBarX(this.datasets.length, datasetIndex, index),
+                        y: this.scale.calculateY(bar.value),
+                        width: this.scale.calculateBarWidth(this.datasets.length)
+                    }, easingDecimal).draw();
 
-                            var prevDatasetBars = this.datasets[datasetIndex - 1].bars;
-                            if (prevDatasetBars.length < this.datasets[datasetIndex].diff.length) return;
+                    // update state for diff bar
+                    var diff = bar.diff;
+                    if (!diff) return;
 
-                            var prevDatasetValue = prevDatasetBars[index].value;
-                            var diffValue = prevDatasetValue - bar.value;
+                    var diffDimensions = this.getDiffDimensions(diff);
+                    var diffColor = this.getDiffColor(diff);
 
-                            var diffWidth = this.scale.calculateBarWidth(this.datasets.length) * this.options.diffWidth;
-                            var diffX = diffValue < 0 ? bar.x - (bar.width + diffWidth) / 2 : bar.x - (bar.width - diffWidth) / 2;
-
-                            diff.base = prevDatasetBars[index].y;
-
-                            //Transition then draw
-                            diff.fillColor = diffValue < 0 ? this.options.diffNegativeColor : this.options.diffPositiveColor;
-                            diff.transition({
-                                value: diffValue,
-                                x: diffX,
-                                y: bar.y,
-                                width : diffWidth
-                            }, easingDecimal).draw();
-                        }
-                    }
+                    diff.strokeColor = diff.fillColor = diffColor;
+                    diff.transition(diffDimensions, easingDecimal).draw();
                 }, this);
-
             }, this);
         }
     });
@@ -263,4 +362,4 @@ export default angular.module('app.directives.calculator-charts', [angularChart.
     .run(CreateCharts)
     .directive('chartAnnualCosts', ['ChartJsFactory', function (ChartJsFactory) { return new ChartJsFactory('AnnualCosts'); }])
     .directive('chartSavings', ['ChartJsFactory', function (ChartJsFactory) { return new ChartJsFactory('Savings'); }])
-.name;
+    .name;

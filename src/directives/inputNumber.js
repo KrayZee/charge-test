@@ -1,15 +1,6 @@
 import angular from 'angular';
 
-/**
- * @param {Number} number
- * @returns {Number}
- */
-function getFractionSize(number) {
-    var decimals = Math.round((number - parseInt(number)) * 100);
-    if (decimals % 10) return 2;
-    if (decimals % 100) return 1;
-    return 0;
-}
+import floatingNumber from '../filters/floatingNumber';
 
 function inputNumber($filter) {
     return {
@@ -23,8 +14,7 @@ function inputNumber($filter) {
             });
 
             modelController.$formatters.push(function (value) {
-                let fractionSize = getFractionSize(parseFloat(value));
-                return $filter('number')(value, fractionSize);
+                return $filter('floatingNumber')(value, 2);
             });
         }
     }
@@ -32,6 +22,6 @@ function inputNumber($filter) {
 
 inputNumber.$inject = ['$filter'];
 
-export default angular.module('app.directives.input-number', [])
+export default angular.module('app.directives.input-number', [floatingNumber])
     .directive('inputNumber', inputNumber)
     .name;
