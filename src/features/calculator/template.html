@@ -227,7 +227,7 @@
                 <td class="calculator-summary__info-payback-period" ng-bind-template="{{calculator.summary.paybackPeriod | floatingNumber : 2}} years"></td>
                 <td></td>
                 <th>Total saving</th>
-                <td class="calculator-summary__info-total-saving">{{calculator.summary.totalSaving | currency : "$ "}}</td>
+                <td class="calculator-summary__info-total-saving" ng-bind-template="$ {{calculator.summary.totalSaving | floatingNumber: 2}}"></td>
             </tr>
         </table>
 
@@ -237,11 +237,12 @@
                     data-chart-labels="calculator.charts.annualCosts.labels"
                     data-chart-series="calculator.charts.annualCosts.series"
                     data-chart-colours="calculator.charts.annualCosts.colours"
+                    data-chart-options="calculator.charts.annualCosts.options"
                     data-chart-legend="true"></canvas>
         </div>
 
         <div class="calculator-summary__savings-chart">
-            <canvas class="chart chart-bar" width="544" height="210"
+            <canvas class="chart chart-savings" width="544" height="210"
                     data-chart-data="calculator.charts.savings.data"
                     data-chart-labels="calculator.charts.savings.labels"
                     data-chart-series="calculator.charts.savings.series"

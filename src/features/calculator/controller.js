@@ -84,7 +84,7 @@ function getAnalogueAnnualCost(formData) {
 }
 
 export default class CalculatorController {
-    constructor() {
+    constructor($filter) {
         this.countries = [
             new Country('United Kingdom', 'uk')
         ];
@@ -118,6 +118,11 @@ export default class CalculatorController {
         this.formData.interestRate = 0.10;
         this.formData.upfrontPayment = 0.45;
 
+        Number.prototype.toCurrency = function(symbol) {
+            return symbol + $filter('floatingNumber')(this, 2);
+        };
+
+
         this.charts = {
             annualCosts: {
                 data: [
@@ -137,15 +142,15 @@ export default class CalculatorController {
                     }
                 ],
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+                    title: 'Annual costs',
+                    scaleLabelY: 'Thousands $',
+                    scaleLabelX: 'Years',
+                    multiTooltipTemplate: "<%= (value * 1000).toCurrency('$ ') %>",
+                    scaleFontFamily: "'Muli', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
                 }
             },
             savings: {
-                data: [
-                    [0, 0, 0],
-                    [0, 0, 0]
-                ],
+                data: [[0, 0, 0]],
                 labels: [0, 1, 2],
                 series: ['I.C.E.', 'Charge'],
                 colours: [
@@ -171,12 +176,27 @@ export default class CalculatorController {
 
         let analogueAnnualCost = getAnalogueAnnualCost(this.formData);
         let chargeAnnualCost = getChargeAnnualCosts(this.formData);
+        let savings = [];
+
+        analogueAnnualCost.forEach((amount, index) => {
+            savings[index] = analogueAnnualCost[index] - chargeAnnualCost[index];
+
+            if (index === 0) return;
+            savings[index] = savings[index - 1] + savings[index];
+        });
 
         this.charts.annualCosts.data[0] = analogueAnnualCost.map(amount => amount / 1000);
         this.charts.annualCosts.data[1] = chargeAnnualCost.map(amount => amount / 1000);
         this.charts.annualCosts.labels = _.range(chargeAnnualCost.length);
 
+        this.charts.savings.data[0] = savings.map(amount => amount / 1000);
+        this.charts.savings.labels = _.range(chargeAnnualCost.length);
+
         this.summary.paybackPeriod =
             Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0);
+
+        this.summary.totalSaving = savings[savings.length - 1];
     }
 }
+
+CalculatorController.$inject = ['$filter'];
