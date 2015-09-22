@@ -17,8 +17,8 @@ var CHARGE_COLOR = new Color('#ed7d31');
  * @returns {number}
  */
 function getChargeTruckCost(formData) {
-    // TODO: implements charge truck costs calculating
-    return 80000;
+    return formData.vehicleType !== null && formData.truckWeight && formData.dailyRange
+        ? 80000 : 0;
 }
 
 /**
@@ -74,6 +74,8 @@ function getChargeAnnualCosts(formData) {
 }
 
 function getAnalogueAnnualCost(formData) {
+    if (getChargeTruckCost(formData) === 0) return [];
+
     var truckCost = 6000;
     var polCost = truckCost * 2;
     var costs = new Array(formData.term + 1);
@@ -100,23 +102,23 @@ export default class CalculatorController {
         this.summary = {};
 
         this.formData = new CalculatorFormData();
-        this.formData.vehicleType = 1;
-        this.formData.truckWeight = 5.5;
-        this.formData.country = this.countries[0];
-        this.formData.dieselPrice = 1.1;
-        this.formData.electricityPrice = 10.5;
-        this.formData.oneTimeSubsidy = 5000;
-        this.formData.annualSubsidy = 500;
-        this.formData.zeroEmission = true;
-        this.formData.dailyRange = 200;
-        this.formData.urbanTime = 0.70;
-        this.formData.workingDaysPerYear = 300;
-        this.formData.rechargingAbility = 2;
-        this.formData.rechargingFrequency = 70;
-        this.formData.purchaseOption = 1;
-        this.formData.term = 7;
-        this.formData.interestRate = 0.10;
-        this.formData.upfrontPayment = 0.45;
+        //this.formData.vehicleType = 1;
+        //this.formData.truckWeight = 5.5;
+        //this.formData.country = this.countries[0];
+        //this.formData.dieselPrice = 1.1;
+        //this.formData.electricityPrice = 10.5;
+        //this.formData.oneTimeSubsidy = 5000;
+        //this.formData.annualSubsidy = 500;
+        //this.formData.zeroEmission = true;
+        //this.formData.dailyRange = 200;
+        //this.formData.urbanTime = 0.70;
+        //this.formData.workingDaysPerYear = 300;
+        //this.formData.rechargingAbility = 2;
+        //this.formData.rechargingFrequency = 70;
+        //this.formData.purchaseOption = 1;
+        //this.formData.term = 7;
+        //this.formData.interestRate = 0.10;
+        //this.formData.upfrontPayment = 0.45;
 
         Number.prototype.toCurrency = function(symbol) {
             return symbol + $filter('floatingNumber')(this, 2);
@@ -152,17 +154,11 @@ export default class CalculatorController {
             savings: {
                 data: [[0, 0, 0]],
                 labels: [0, 1, 2],
-                series: ['I.C.E.', 'Charge'],
-                colours: [
-                    {
-                        fillColor: ICE_COLOR.hexString(),
-                        highlightFill: ICE_COLOR.lighten(0.15).hexString()
-                    },
-                    {
-                        fillColor: CHARGE_COLOR.hexString(),
-                        highlightFill: CHARGE_COLOR.lighten(0.15).hexString()
-                    }
-                ]
+                options: {
+                    title: 'Savings',
+                    scaleLabelY: 'Thousands $',
+                    scaleLabelX: 'Years'
+                }
             }
         };
 
@@ -189,8 +185,8 @@ export default class CalculatorController {
         this.charts.annualCosts.data[1] = chargeAnnualCost.map(amount => amount / 1000);
         this.charts.annualCosts.labels = _.range(chargeAnnualCost.length);
 
-        this.charts.savings.data[0] = savings.map(amount => amount / 1000);
-        this.charts.savings.labels = _.range(chargeAnnualCost.length);
+        this.charts.savings.data[0] = savings.concat([savings[savings.length - 1]]).map(amount => amount / 1000);
+        this.charts.savings.labels = _.range(chargeAnnualCost.length).concat(['Total']);
 
         this.summary.paybackPeriod =
             Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0);

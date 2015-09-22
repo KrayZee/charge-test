@@ -239,7 +239,7 @@ function CreateCharts(ChartJs, $filter) {
                         ctx.font = this.font;
                         ctx.textAlign = 'right';
                         ctx.textBaseline = 'bottom';
-                        ctx.fillText(options.scaleLabelX, this.width - 25, this.height);
+                        ctx.fillText(options.scaleLabelX, this.width - 25 + options.scaleLabelXOffsetX, this.height + options.scaleLabelXOffsetY);
                     }
 
                     if (options.scaleLabelY) {
@@ -518,12 +518,15 @@ function CreateCharts(ChartJs, $filter) {
             showTooltips: false,
             title: null,
             scaleLabelX: null,
+            scaleLabelXOffsetX: -60,
+            scaleLabelXOffsetY: -45,
             scaleLabelY: null
         },
 
         initialize: function(data) {
             // expose options as a scope variable here so we can access it in the ScaleClass
             var options = this.options;
+            var barsFont = helpers.fontString(options.scaleFontSize - 1, options.scaleFontStyle, options.scaleFontFamily);
 
             this.ScaleClass = ScaleWithLabels(options);
 
@@ -554,20 +557,22 @@ function CreateCharts(ChartJs, $filter) {
                 showStroke: this.options.barShowStroke,
                 ctx: this.chart.ctx,
                 prev: null,
+                total: false,
 
                 draw: function() {
                     ChartJs.Chart.Rectangle.prototype.draw.call(this);
 
                     var ctx = this.ctx;
-                    let diff = this.value - (this.prev ? this.prev.value : 0);
-                    let textY = diff < 0
+                    let value = this.value - (this.prev && !this.total ? this.prev.value : 0);
+                    let textY = value < 0
                         ? Math.max(this.base, this.y) + 2
                         : Math.min(this.base, this.y) - 2;
 
+                    ctx.font = barsFont;
                     ctx.fillStyle = 'black';
                     ctx.textAlign = 'center';
-                    ctx.textBaseline = diff < 0 ? 'top' : 'bottom';
-                    ctx.fillText($filter('floatingNumber')(diff), this.x, textY);
+                    ctx.textBaseline = value < 0 ? 'top' : 'bottom';
+                    ctx.fillText($filter('floatingNumber')(value, 2), this.x, textY);
 
                     if (!this.prev) return;
 
@@ -576,8 +581,8 @@ function CreateCharts(ChartJs, $filter) {
                     ctx.strokeStyle = 'black';
                     ctx.setLineDash([1, 2]);
 
-                    ctx.moveTo(this.x - this.width / 2, this.base);
-                    ctx.lineTo(this.prev.x + this.prev.width / 2, this.base);
+                    ctx.moveTo(this.x - this.width / 2, this.prev.y);
+                    ctx.lineTo(this.prev.x + this.prev.width / 2, this.prev.y);
                     ctx.stroke();
                     ctx.closePath();
 
@@ -603,6 +608,7 @@ function CreateCharts(ChartJs, $filter) {
                     // add a new point for each piece of data, passing any required data to draw.
                     datasetObject.bars.push(new this.BarClass({
                         prev: prev,
+                        total: dataIndex == dataset.data.length - 1,
                         value: dataPoint,
                         label: data.labels[dataIndex],
                         datasetLabel: dataset.label,
@@ -610,15 +616,6 @@ function CreateCharts(ChartJs, $filter) {
                         fillColor : dataset.fillColor
                     }));
                 }, this);
-
-                let lastBar = datasetObject.bars[datasetObject.bars.length - 1];
-                datasetObject.bars.push(new this.BarClass({
-                    value: lastBar.value,
-                    label: 'Total',
-                    datasetLabel: 'Total',
-                    strokeColor : dataset.strokeColor,
-                    fillColor : dataset.fillColor
-                }));
             },this);
 
             this.buildScale(data.labels);
@@ -628,7 +625,7 @@ function CreateCharts(ChartJs, $filter) {
 
                 helpers.extend(bar, {
                     width: this.scale.calculateBarWidth(this.datasets.length),
-                    base: bar.prev ? bar.prev.y : this.scale.calculateY(0),
+                    base: (bar.prev && !bar.total) ? bar.prev.y : this.scale.calculateY(0),
                     strokeColor: color,
                     fillColor: color,
                     x: this.scale.calculateBarX(this.datasets.length, datasetIndex, index),
@@ -638,37 +635,6 @@ function CreateCharts(ChartJs, $filter) {
             }, this);
 
             this.render();
-        },
-
-        /**
-         * @param {DiffClass} diff
-         * @returns {{value: number, width: number, base: *, x: number, y: *}}
-         */
-        getDiffDimensions: function(diff) {
-            let bar1 = diff.bar1, bar2 = diff.bar2;
-            let value = this.getDiffValue(diff);
-            let width = bar1.width;
-            let base = diff.prev ? diff.prev.y : diff.base;
-
-            // draw diff on bar1 if bar2.value > bar1.value
-            // draw diff on bar2 if bar1.value > bar2.value
-            let x = bar1.x + bar1.width / 2;
-
-            return {
-                value: value,
-                width: width,
-                base: base,
-                x: x,
-                y: base + bar1.y - bar2.y
-            }
-        },
-
-        /**
-         * @param {DiffClass} diff
-         * @returns {number}
-         */
-        getDiffValue: function(diff) {
-            return diff.bar1.value - diff.bar2.value;
         },
 
         /**
@@ -712,7 +678,7 @@ function CreateCharts(ChartJs, $filter) {
                 helpers.each(dataset.bars, function (bar, index) {
                     if (!bar.hasValue()) return;
 
-                    bar.base = bar.prev ? bar.prev.y : this.scale.calculateY(0);
+                    bar.base = (bar.prev && !bar.total) ? bar.prev.y : this.scale.calculateY(0);
 
                     // transition then draw
                     bar.transition({
