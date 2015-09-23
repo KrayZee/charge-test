@@ -3,10 +3,11 @@ import 'angular-chart.js/dist/angular-chart.css';
 import angular from 'angular';
 import angularChart from 'angular-chart.js/dist/angular-chart';
 
+// AHTUNG! There are 99% of code copy pasted from original chart.js
+
 function CreateCharts(ChartJs, $filter) {
     var helpers = ChartJs.Chart.helpers;
 
-    // I prefer to forgot about this class
     var ScaleWithLabels = function(options) {
         return ChartJs.Chart.Scale.extend({
             offsetGridLines: true,
@@ -283,6 +284,8 @@ function CreateCharts(ChartJs, $filter) {
             title: null,
             scaleLabelX: null,
             scaleLabelY: null,
+            scaleLabelXOffsetX: 0,
+            scaleLabelXOffsetY: 0,
             legendTemplate : `<ul class="<%=name.toLowerCase()%>-legend">
                 <% for (var i=0; i<datasets.length; i++){%>
                 <li><span style="background-color:<%=datasets[i].fillColor%>"></span>
@@ -671,8 +674,6 @@ function CreateCharts(ChartJs, $filter) {
             var easingDecimal = ease || 1;
             this.clear();
 
-            this.scale.draw(easingDecimal);
-
             // draw all the bars for each dataset
             helpers.each(this.datasets, function (dataset, datasetIndex) {
                 helpers.each(dataset.bars, function (bar, index) {
@@ -693,6 +694,8 @@ function CreateCharts(ChartJs, $filter) {
 
                 }, this);
             }, this);
+
+            this.scale.draw(easingDecimal);
         }
     });
 }
