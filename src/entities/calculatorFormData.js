@@ -14,8 +14,8 @@ export default class CalculatorFormData {
         /** @member {double} CalculatorFormData#truckWeight */
         this.truckWeight = 0;
 
-        /** @member {?CountryPrices} CalculatorFormData#country */
-        this.country = null;
+        /** @member {?CountryPrices} CalculatorFormData#countryPrices */
+        this.countryPrices = null;
 
         /** @member {boolean} CalculatorFormData#zeroEmission */
         this.zeroEmission = false;

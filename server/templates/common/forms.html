@@ -1,0 +1,80 @@
+[% macro field(fieldModel, jsModel, jsObjectsStorage = '', jsOnChange = '', cssPrefix = '') %]
+    <div class="[[cssPrefix]]__field">
+        <label class="[[cssPrefix]]__label">[[fieldModel.label]]</label>
+
+        [% if fieldModel.type == 'number' %]
+            [[ field_number(fieldModel.name, jsModel, jsOnChange, cssPrefix, fieldModel.prefix, fieldModel.suffix, fieldModel.disabled) ]]
+        [% elif fieldModel.type == 'percent' %]
+            [[ field_percent(fieldModel.name, jsModel, jsOnChange, cssPrefix, fieldModel.disabled) ]]
+        [% elif fieldModel.type == 'enum' %]
+            [[ field_radioGroup(fieldModel.name, fieldModel.options, jsModel, jsOnChange, cssPrefix, fieldModel.disabled) ]]
+        [% elif fieldModel.type == 'object' %]
+            [[ field_object(fieldModel.name, fieldModel.objectType, fieldModel.labelField, fieldModel.queryUrl, jsModel, jsObjectsStorage, jsOnChange, cssPrefix, fieldModel.disabled) ]]
+        [% elif fieldModel.type == 'boolean' %]
+            [[ field_boolean(fieldModel.name, jsModel, jsOnChange, cssPrefix, fieldModel.disabled) ]]
+        [% endif %]
+
+        [% for subfield in fieldModel.nestedFields %]
+            [[ field(subfield, jsModel, jsObjectsStorage, jsOnChange, cssPrefix) ]]
+        [% endfor %]
+    </div>
+[% endmacro %]
+
+[% macro field_number(name, jsModel, jsOnChange = '', cssPrefix = '', prefix = '', suffix = '', disabled = False) %]
+    <input type="text" id="[[cssPrefix]]-[[name]]" class="[[cssPrefix]]__control"
+           [[ field_attr_disabled(disabled, jsModel) ]]
+           ng-model="[[jsModel]].[[name]]"
+           ng-change="[[jsOnChange]]"
+           data-input-number
+           [% if prefix %]data-input-prefix="[[prefix]]"[% endif %]
+           [% if suffix %]data-input-suffix="[[suffix]]"[% endif %]
+    />
+[% endmacro %]
+
+[% macro field_percent(name, jsModel, jsOnChange = '', cssPrefix = '', disabled = False) %]
+    <input type="text" id="[[cssPrefix]]-[[name]]" class="[[cssPrefix]]__control"
+           [[ field_attr_disabled(disabled, jsModel) ]]
+           ng-model="[[jsModel]].[[name]]"
+           ng-change="[[jsOnChange]]"
+           data-input-percent
+           data-input-suffix="%"
+    />
+[% endmacro %]
+
+[% macro field_radioGroup(name, options, jsModel, jsOnChange = '', cssPrefix = '', disabled = False) %]
+    <div class="[[cssPrefix]]__control [[cssPrefix]]__radio-group">
+        [% for option in options %]
+        <input type="radio" id="[[cssPrefix]]-[[name]]-[[loop.index0]]"
+               ng-model="[[jsModel]].[[name]]"
+               ng-change="[[jsOnChange]]"
+               ng-value="[[option.value if option.value is number else '\'' + option.value + '\'']]"
+               [[ field_attr_disabled(disabled, jsModel) ]] />
+        <label for="[[cssPrefix]]-[[name]]-[[loop.index0]]">[[option.label]]</label>
+        [% endfor %]
+    </div>
+[% endmacro %]
+
+[% macro field_object(name, objectType, labelField, queryUrl, jsModel, jsObjectsStorage, jsOnChange = '', cssPrefix = '', disabled = False) %]
+    <select id="[[cssPrefix]]-[[name]]" class="[[cssPrefix]]__control"
+            ng-init="[[jsObjectsStorage]].$load('[[objectType]]', '[[queryUrl]]')"
+            ng-model="[[jsModel]].[[name]]"
+            ng-change="[[jsOnChange]]"
+            ng-options="item.[[labelField]] for item in [[jsObjectsStorage]].[[objectType]]"
+            [[ field_attr_disabled(disabled, jsModel) ]]></select>
+[% endmacro %]
+
+[% macro field_boolean(name, jsModel, jsOnChange = '', cssPrefix = '', disabled = False) %]
+    <input type="checkbox" id="[[cssPrefix]]-[[name]]" class="[[cssPrefix]]__control"
+           [[ field_attr_disabled(disabled, jsModel) ]]
+           ng-model="[[jsModel]].[[name]]"
+           ng-change="[[jsOnChange]]" />
+    <label for="[[cssPrefix]]-[[name]]"></label>
+[% endmacro %]
+
+[% macro field_attr_disabled(disabled, jsModel) -%]
+    [% if disabled is mapping %]
+        ng-disabled="[% for key, values in disabled.iteritems() %][% for value in values %][[jsModel]].[[key]] == [[value]] ||[% endfor %][% endfor %] false"
+    [% elif disabled %]
+        ng-disabled="true"
+    [% endif %]
+[%- endmacro %]

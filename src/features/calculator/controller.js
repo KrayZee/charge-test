@@ -92,16 +92,13 @@ export default class CalculatorController {
         this.$http = $http;
         this.$q = $q;
 
-        $http.get('/api/country-prices').then(response => {
-            this.countryPrices = response.data.map(item => {
-                let c = new CountryPrices(item.name, item.code);
-                c.dieselPrice = item.dieselPrice;
-                c.electricityPrice = item.electricityPrice;
-                c.oneTimeSubsidy = item.oneTimeSubsidy;
-                c.annualSubsidy = item.annualSubsidy;
-                return c;
-            })
-        });
+        this.objectsStorage = {
+            $load: function (type, url) {
+                $http.get(url).then(response => {
+                    this[type] = response.data;
+                })
+            }
+        };
 
         this.chargeTruck = {
             name: 'Charge 6t 32 kWh',
@@ -121,7 +118,6 @@ export default class CalculatorController {
         Number.prototype.toCurrency = function(symbol) {
             return symbol + $filter('floatingNumber')(this, 2);
         };
-
 
         this.charts = {
             annualCosts: {
@@ -185,7 +181,7 @@ export default class CalculatorController {
 CalculatorController.prototype.updateSummary = _.debounce(function() {
     if (this.formData.vehicleType === undefined) return;
     if (!this.formData.truckWeight) return;
-    if (!this.formData.country) return;
+    if (!this.formData.countryPrices) return;
     if (!this.formData.dailyRange) return;
 
     if (this.formData.purchaseOption == PurchaseOptions.LEASING) {
