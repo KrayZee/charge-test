@@ -45,11 +45,13 @@ c.	ICE аналог – только приведенный на скриншо�
 
 ## Run app
 
-To use it, just install the npm dependencies and start server:
+To use it, just install the npm dependencies, build static and start server:
 
 ```shell
 $ npm install
-$ npm run dev
+$ npm run build
+$ cd server
+$ python server.py
 $ open [index in browser](http://127.0.0.1:8080/) 
 ```
 
