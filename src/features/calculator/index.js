@@ -9,14 +9,17 @@ import charts from '../../directives/charts';
 
 import floatingNumber from '../../filters/floatingNumber';
 
+import objectsStorage from '../../services/objectsStorage';
+
 import controller from './controller';
 
 export default angular.module('app.calculator', [
     inputAddon,
     inputPercent,
     inputNumber,
+    charts,
     floatingNumber,
-    charts
+    objectsStorage
 ])
     .controller('CalculatorController', controller)
     .name;

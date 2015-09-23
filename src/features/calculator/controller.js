@@ -1,11 +1,15 @@
 import _ from 'lodash';
 import Color from 'color';
 
-import CountryPrices from '../../entities/countryPrices';
 import CalculatorFormData from '../../entities/calculatorFormData';
+import CalculatorSummary from '../../entities/calculatorSummary';
+import CountryPrices from '../../entities/countryPrices';
 import VehicleType from '../../entities/vehicleType';
 import RechargingAbility from '../../entities/rechargingAbility';
 import PurchaseOptions from '../../entities/purchaseOptions';
+import Truck from '../../entities/truck';
+
+import CalculationsService from '../../services/calculations';
 
 var CURRENT_YEAR = new Date().getFullYear();
 
@@ -14,107 +18,19 @@ var CHARGE_COLOR = new Color('#ed7d31');
 
 var lastZeroEmission, lastDailyRange;
 
-/**
- * @param {{name: string, cost: number, pol: number}} truck
- * @returns {number}
- */
-function getChargeTruckCost(truck) {
-    return truck.cost;
-}
-
-/**
- * @param {{name: string, cost: number, pol: number}} truck
- * @returns {number}
- */
-function getChargePOL(truck) {
-    return truck.pol;
-}
-
-/**
- * @param {number} truckCost
- * @param {number} upfrontPayment
- * @param {number} term
- * @param {number} interestRate
- * @returns {number}
- */
-function getLeasingYearPayment(truckCost, upfrontPayment, term, interestRate) {
-    // calculate leasing year payment as annuity payment
-    // https://en.wikipedia.org/wiki/Annuity
-    if (interestRate === 0) {
-        return truckCost * (1 - upfrontPayment) / term;
-    }
-
-    let k = Math.sqrt(1 + interestRate);
-    let kn = Math.pow(k, term);
-    return truckCost * (1 - upfrontPayment) * kn * (k - 1) / (kn - 1);
-}
-
-/**
- * @param {CalculatorFormData} formData
- * @param {{name: string, cost: number, pol: number}} truck
- * @returns {number[]}
- */
-function getChargeAnnualCosts(formData, truck) {
-    var truckCost = getChargeTruckCost(truck);
-    var polCost = getChargePOL(truck);
-    var costs = new Array(formData.term + 1);
-
-    costs.fill(polCost);
-
-    if (formData.purchaseOption == PurchaseOptions.ONE_TIME_PAYMENT) {
-        costs[0] = costs[0] + truckCost;
-    } else {
-        let paidAmount = truckCost * formData.upfrontPayment;
-        let yearLeasingPayment = getLeasingYearPayment(truckCost, formData.upfrontPayment, formData.term, formData.interestRate);
-
-        costs[0] = costs[0] + paidAmount;
-
-        for (let i = 0; i < formData.term; i++) {
-            costs[i + 1] = costs[i + 1] + yearLeasingPayment;
-        }
-    }
-
-    return costs;
-}
-
-function getAnalogueAnnualCost(formData) {
-    var truckCost = 6000;
-    var polCost = truckCost * 2;
-    var costs = new Array(formData.term + 1);
-
-    costs.fill(polCost);
-    costs[0] = costs[0] + truckCost;
-    return costs;
-}
-
 export default class CalculatorController {
-    constructor($filter, $http, $q) {
+    constructor($filter, $http, $q, objectsStorage) {
         this.$http = $http;
         this.$q = $q;
+        this.objectsStorage = objectsStorage;
 
-        this.objectsStorage = {
-            $load: function (type, url) {
-                $http.get(url).then(response => {
-                    this[type] = response.data;
-                })
-            }
-        };
+        this.chargeTruck = new Truck('Charge 6t 32 kWh', 0, 0);
+        this.analogueTruck = new Truck('Isuzu NPR 6t', 0, 0);
 
-        this.chargeTruck = {
-            name: 'Charge 6t 32 kWh',
-            cost: 0,
-            pol: 0
-        };
-
-        this.analogueTruck = {
-            name: 'Isuzu NPR 6t',
-            cost: 0,
-            pol: 0
-        };
-
-        this.summary = {};
         this.formData = new CalculatorFormData();
+        this.summary = new CalculatorSummary();
 
+        // will be used in chart tooltip templates
         Number.prototype.toCurrency = function(symbol) {
             return symbol + $filter('floatingNumber')(this, 2);
         };
@@ -172,6 +88,7 @@ export default class CalculatorController {
         };
 
         return this.$http.get('/api/charge-truck', { params: params }).then(response => {
+            /** @namespace response.data.truckCost */
             this.chargeTruck.cost = response.data.truckCost;
             this.chargeTruck.pol = response.data.pol;
         });
@@ -191,31 +108,21 @@ CalculatorController.prototype.updateSummary = _.debounce(function() {
     }
 
     this.updateChargeTruckInfo().then(() => {
-        let analogueAnnualCost = getAnalogueAnnualCost(this.formData);
-        let chargeAnnualCost = getChargeAnnualCosts(this.formData, this.chargeTruck);
-        let savings = [];
+        let analogueAnnualCosts = CalculationsService.calculateAnalogueAnnualCosts(this.formData);
+        let chargeAnnualCosts = CalculationsService.calculateChargeAnnualCosts(this.formData, this.chargeTruck);
+        let savings = CalculationsService.calculateSavings(analogueAnnualCosts, chargeAnnualCosts);
 
-        analogueAnnualCost.forEach((amount, index) => {
-            savings[index] = analogueAnnualCost[index] - chargeAnnualCost[index];
+        this.charts.annualCosts.data[0] = analogueAnnualCosts.map(amount => amount / 1000);
+        this.charts.annualCosts.data[1] = chargeAnnualCosts.map(amount => amount / 1000);
+        this.charts.annualCosts.labels = _.range(chargeAnnualCosts.length);
 
-            if (index === 0) return;
-            savings[index] = savings[index - 1] + savings[index];
-        });
-
-        this.charts.annualCosts.data[0] = analogueAnnualCost.map(amount => amount / 1000);
-        this.charts.annualCosts.data[1] = chargeAnnualCost.map(amount => amount / 1000);
-        this.charts.annualCosts.labels = _.range(chargeAnnualCost.length);
-
-        this.charts.savings.data[0] = savings.concat([savings[savings.length - 1]]).map(amount => amount / 1000);
-        this.charts.savings.labels = _.range(chargeAnnualCost.length).concat(['Total']);
+        this.charts.savings.data[0] = savings.map(amount => amount / 1000);
+        this.charts.savings.labels = _.range(chargeAnnualCosts.length - 1).concat(['Total']);
 
         this.summary.totalSaving = savings[savings.length - 1];
         this.summary.paybackPeriod = this.summary.totalSaving > 0
-            ? Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0)
-            : 0;
-
-
+            ? Math.max(CalculationsService.calculatePaybackPeriod(chargeAnnualCosts, analogueAnnualCosts), 0) : 0;
     });
 }, 300);
 
-CalculatorController.$inject = ['$filter', '$http', '$q'];
+CalculatorController.$inject = ['$filter', '$http', '$q', 'objectsStorage'];
