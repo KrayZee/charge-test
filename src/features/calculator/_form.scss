@@ -41,10 +41,10 @@ input[type=checkbox].calculator-form__control {
     left: -9999px;
   }
 
-  & + label {
-    $size: 20px;
-    $border-size: 2px;
+  $size: 20px;
+  $border-size: 2px;
 
+  & + label {
     position: relative;
     padding-left: 30px;
 
@@ -75,7 +75,9 @@ input[type=checkbox].calculator-form__control {
     transform: scale(1);
     content: "v";
     text-align: center;
-    font-size: 20px;
+    font-size: $size;
+    line-height: $size - $border-size;
+
   }
 
   &:focus + label:before { border-color: $color-orange; }
@@ -90,6 +92,10 @@ input, select, textarea {
 
     &:hover, &:focus {
       border-color: $color-orange;
+    }
+
+    &.ng-invalid {
+      border-color: $color-red;
     }
 
     &:disabled {

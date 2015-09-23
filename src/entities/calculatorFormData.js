@@ -38,13 +38,13 @@ export default class CalculatorFormData {
         /** @member {PurchaseOptions} CalculatorFormData#purchaseOption */
         this.purchaseOption = PurchaseOptions.ONE_TIME_PAYMENT;
 
-        /** @member {int} CalculatorFormData#term */
+        /** @member {int|undefined} CalculatorFormData#term */
         this.term = 0;
 
-        /** @member {int} CalculatorFormData#interestRate */
+        /** @member {int|undefined} CalculatorFormData#interestRate */
         this.interestRate = 0;
 
-        /** @member {int} CalculatorFormData#upfrontPayment */
+        /** @member {int|undefined} CalculatorFormData#upfrontPayment */
         this.upfrontPayment = 0;
     }
 }

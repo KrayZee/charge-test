@@ -111,7 +111,7 @@ function CreateCharts(ChartJs, $filter) {
 
                     //Max label rotate should be 90 - also act as a loop counter
                     while ((this.xLabelWidth > xGridWidth && this.xLabelRotation === 0) || (this.xLabelWidth > xGridWidth && this.xLabelRotation <= 90 && this.xLabelRotation > 0)){
-                        cosRotation = Math.cos(toRadians(this.xLabelRotation));
+                        cosRotation = Math.cos(helpers.radians(this.xLabelRotation));
 
                         firstRotated = cosRotation * firstWidth;
                         lastRotated = cosRotation * lastWidth;
@@ -128,7 +128,7 @@ function CreateCharts(ChartJs, $filter) {
 
                     }
                     if (this.xLabelRotation > 0){
-                        this.endPoint -= Math.sin(toRadians(this.xLabelRotation))*originalLabelWidth + 3;
+                        this.endPoint -= Math.sin(helpers.radians(this.xLabelRotation))*originalLabelWidth + 3;
                     }
                 }
                 else{

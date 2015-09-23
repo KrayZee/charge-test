@@ -188,6 +188,12 @@ CalculatorController.prototype.updateSummary = _.debounce(function() {
     if (!this.formData.country) return;
     if (!this.formData.dailyRange) return;
 
+    if (this.formData.purchaseOption == PurchaseOptions.LEASING) {
+        if (this.formData.term === undefined) return;
+        if (this.formData.interestRate === undefined) return;
+        if (this.formData.upfrontPayment === undefined) return;
+    }
+
     this.updateChargeTruckInfo().then(() => {
         let analogueAnnualCost = getAnalogueAnnualCost(this.formData);
         let chargeAnnualCost = getChargeAnnualCosts(this.formData, this.chargeTruck);
@@ -207,10 +213,12 @@ CalculatorController.prototype.updateSummary = _.debounce(function() {
         this.charts.savings.data[0] = savings.concat([savings[savings.length - 1]]).map(amount => amount / 1000);
         this.charts.savings.labels = _.range(chargeAnnualCost.length).concat(['Total']);
 
-        this.summary.paybackPeriod =
-            Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0);
-
         this.summary.totalSaving = savings[savings.length - 1];
+        this.summary.paybackPeriod = this.summary.totalSaving > 0
+            ? Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0)
+            : 0;
+
+
     });
 }, 300);
 
