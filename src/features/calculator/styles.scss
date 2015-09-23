@@ -1,9 +1,9 @@
 @import url(https://fonts.googleapis.com/css?family=Muli:400,400italic);
 
+$color-orange: #ed7d31;
+
 @import "./form";
 @import "./summary";
-
-$color-orange: #ed7d31;
 
 .clearfix {
   &:before,
