@@ -23,7 +23,7 @@ function CreateCharts(ChartJs, $filter) {
             },
 
             calculateBaseWidth: function() {
-                return (this.calculateX(1) - this.calculateX(0)) - (2 * options.barValueSpacing);
+                return (this.calculateX(1) - this.calculateX(0)) / options.barValueSpacing;
             },
 
             calculateBarWidth: function(datasetCount) {
@@ -274,7 +274,7 @@ function CreateCharts(ChartJs, $filter) {
             diffWidth: 0.25,
             diffPositiveColor: '#72AC45',
             diffNegativeColor: '#FE0002',
-            barValueSpacing: 15,
+            barValueSpacing: 1.5,
             scaleShowHorizontalLines: false,
             scaleShowVerticalLines: false,
             scaleLineColor: "black",
@@ -509,7 +509,7 @@ function CreateCharts(ChartJs, $filter) {
             diffWidth: 0.25,
             diffPositiveColor: '#72AC45',
             diffNegativeColor: '#FE0002',
-            barValueSpacing: 15,
+            barValueSpacing: 2,
             scaleBeginAtZero: false,
             scaleShowHorizontalLines: false,
             scaleShowVerticalLines: false,
@@ -642,7 +642,7 @@ function CreateCharts(ChartJs, $filter) {
          * @returns {number}
          */
         getBarColor: function(bar) {
-            return bar.value - (bar.prev ? bar.prev.value : 0) < 0
+            return bar.value - ((bar.prev && !bar.total) ? bar.prev.value : 0) < 0
                 ? this.options.diffNegativeColor : this.options.diffPositiveColor;
         },
 
@@ -678,6 +678,10 @@ function CreateCharts(ChartJs, $filter) {
                 helpers.each(dataset.bars, function (bar, index) {
                     if (!bar.hasValue()) return;
 
+                    let color = this.getBarColor(bar);
+
+                    bar.strokeColor = color;
+                    bar.fillColor = color;
                     bar.base = (bar.prev && !bar.total) ? bar.prev.y : this.scale.calculateY(0);
 
                     // transition then draw

@@ -21,7 +21,7 @@ function getFractionSize(maxSize, number) {
 function floatingNumber($filter) {
     return function(value, maxFractionSize) {
         let number = parseFloat(value);
-        if (isNaN(number)) return value;
+        if (isNaN(number)) return '';
 
         let fractionSize = getFractionSize(maxFractionSize, number);
         return $filter('number')(value, fractionSize);

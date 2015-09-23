@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Color from 'color';
 
-import Country from '../../entities/country';
+import CountryPrices from '../../entities/countryPrices';
 import CalculatorFormData from '../../entities/calculatorFormData';
 import VehicleType from '../../entities/vehicleType';
 import RechargingAbility from '../../entities/rechargingAbility';
@@ -12,22 +12,22 @@ var CURRENT_YEAR = new Date().getFullYear();
 var ICE_COLOR = new Color('#bfbfbf');
 var CHARGE_COLOR = new Color('#ed7d31');
 
+var lastZeroEmission, lastDailyRange;
+
 /**
- * @param {CalculatorFormData} formData
+ * @param {{name: string, cost: number, pol: number}} truck
  * @returns {number}
  */
-function getChargeTruckCost(formData) {
-    return formData.vehicleType !== null && formData.truckWeight && formData.dailyRange
-        ? 80000 : 0;
+function getChargeTruckCost(truck) {
+    return truck.cost;
 }
 
 /**
- * @param {CalculatorFormData} formData
+ * @param {{name: string, cost: number, pol: number}} truck
  * @returns {number}
  */
-function getChargePOL(formData) {
-    // TODO: implements charge truck POL calculating
-    return getChargeTruckCost(formData) * 0.005;
+function getChargePOL(truck) {
+    return truck.pol;
 }
 
 /**
@@ -40,6 +40,9 @@ function getChargePOL(formData) {
 function getLeasingYearPayment(truckCost, upfrontPayment, term, interestRate) {
     // calculate leasing year payment as annuity payment
     // https://en.wikipedia.org/wiki/Annuity
+    if (interestRate === 0) {
+        return truckCost * (1 - upfrontPayment) / term;
+    }
 
     let k = Math.sqrt(1 + interestRate);
     let kn = Math.pow(k, term);
@@ -48,11 +51,12 @@ function getLeasingYearPayment(truckCost, upfrontPayment, term, interestRate) {
 
 /**
  * @param {CalculatorFormData} formData
+ * @param {{name: string, cost: number, pol: number}} truck
  * @returns {number[]}
  */
-function getChargeAnnualCosts(formData) {
-    var truckCost = getChargeTruckCost(formData);
-    var polCost = getChargePOL(formData);
+function getChargeAnnualCosts(formData, truck) {
+    var truckCost = getChargeTruckCost(truck);
+    var polCost = getChargePOL(truck);
     var costs = new Array(formData.term + 1);
 
     costs.fill(polCost);
@@ -74,8 +78,6 @@ function getChargeAnnualCosts(formData) {
 }
 
 function getAnalogueAnnualCost(formData) {
-    if (getChargeTruckCost(formData) === 0) return [];
-
     var truckCost = 6000;
     var polCost = truckCost * 2;
     var costs = new Array(formData.term + 1);
@@ -86,39 +88,35 @@ function getAnalogueAnnualCost(formData) {
 }
 
 export default class CalculatorController {
-    constructor($filter) {
-        this.countries = [
-            new Country('United Kingdom', 'uk')
-        ];
+    constructor($filter, $http, $q) {
+        this.$http = $http;
+        this.$q = $q;
+
+        $http.get('/api/country-prices').then(response => {
+            this.countryPrices = response.data.map(item => {
+                let c = new CountryPrices(item.name, item.code);
+                c.dieselPrice = item.dieselPrice;
+                c.electricityPrice = item.electricityPrice;
+                c.oneTimeSubsidy = item.oneTimeSubsidy;
+                c.annualSubsidy = item.annualSubsidy;
+                return c;
+            })
+        });
 
         this.chargeTruck = {
-            name: 'Charge 6t 32 kWh'
+            name: 'Charge 6t 32 kWh',
+            cost: 0,
+            pol: 0
         };
 
         this.analogueTruck = {
-            name: 'Isuzu NPR 6t'
+            name: 'Isuzu NPR 6t',
+            cost: 0,
+            pol: 0
         };
 
         this.summary = {};
-
         this.formData = new CalculatorFormData();
-        //this.formData.vehicleType = 1;
-        //this.formData.truckWeight = 5.5;
-        //this.formData.country = this.countries[0];
-        //this.formData.dieselPrice = 1.1;
-        //this.formData.electricityPrice = 10.5;
-        //this.formData.oneTimeSubsidy = 5000;
-        //this.formData.annualSubsidy = 500;
-        //this.formData.zeroEmission = true;
-        //this.formData.dailyRange = 200;
-        //this.formData.urbanTime = 0.70;
-        //this.formData.workingDaysPerYear = 300;
-        //this.formData.rechargingAbility = 2;
-        //this.formData.rechargingFrequency = 70;
-        //this.formData.purchaseOption = 1;
-        //this.formData.term = 7;
-        //this.formData.interestRate = 0.10;
-        //this.formData.upfrontPayment = 0.45;
 
         Number.prototype.toCurrency = function(symbol) {
             return symbol + $filter('floatingNumber')(this, 2);
@@ -127,11 +125,9 @@ export default class CalculatorController {
 
         this.charts = {
             annualCosts: {
-                data: [
-                    [0, 0, 0],
-                    [0, 0, 0]
+                data: [[], []
                 ],
-                labels: [0, 1, 2],
+                labels: [],
                 series: ['I.C.E.', 'Charge'],
                 colours: [
                     {
@@ -148,16 +144,17 @@ export default class CalculatorController {
                     scaleLabelY: 'Thousands $',
                     scaleLabelX: 'Years',
                     multiTooltipTemplate: "<%= (value * 1000).toCurrency('$ ') %>",
-                    scaleFontFamily: "'Muli', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+                    scaleFontFamily: "'Muli', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
                 }
             },
             savings: {
-                data: [[0, 0, 0]],
-                labels: [0, 1, 2],
+                data: [[]],
+                labels: [],
                 options: {
                     title: 'Savings',
                     scaleLabelY: 'Thousands $',
-                    scaleLabelX: 'Years'
+                    scaleLabelX: 'Years',
+                    scaleFontFamily: "'Muli', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
                 }
             }
         };
@@ -165,13 +162,35 @@ export default class CalculatorController {
         setTimeout(() => this.updateSummary(), 0);
     }
 
-    updateSummary() {
-        if (this.formData.term === null) return;
-        if (this.formData.purchaseOption === null) return;
-        if (this.formData.upfrontPayment === null) return;
+    updateChargeTruckInfo() {
+        if (this.formData.zeroEmission === lastZeroEmission && this.formData.dailyRange === lastDailyRange) {
+            return this.$q.when();
+        }
 
+        lastZeroEmission = this.formData.zeroEmission;
+        lastDailyRange = this.formData.dailyRange;
+
+        let params = {
+            zeroEmission: lastZeroEmission,
+            dailyRange: lastDailyRange
+        };
+
+        return this.$http.get('/api/charge-truck', { params: params }).then(response => {
+            this.chargeTruck.cost = response.data.truckCost;
+            this.chargeTruck.pol = response.data.pol;
+        });
+    }
+}
+
+CalculatorController.prototype.updateSummary = _.debounce(function() {
+    if (this.formData.vehicleType === undefined) return;
+    if (!this.formData.truckWeight) return;
+    if (!this.formData.country) return;
+    if (!this.formData.dailyRange) return;
+
+    this.updateChargeTruckInfo().then(() => {
         let analogueAnnualCost = getAnalogueAnnualCost(this.formData);
-        let chargeAnnualCost = getChargeAnnualCosts(this.formData);
+        let chargeAnnualCost = getChargeAnnualCosts(this.formData, this.chargeTruck);
         let savings = [];
 
         analogueAnnualCost.forEach((amount, index) => {
@@ -192,7 +211,7 @@ export default class CalculatorController {
             Math.max((chargeAnnualCost[0] - analogueAnnualCost[0]) / (analogueAnnualCost[1] - chargeAnnualCost[1]), 0);
 
         this.summary.totalSaving = savings[savings.length - 1];
-    }
-}
+    });
+}, 300);
 
-CalculatorController.$inject = ['$filter'];
+CalculatorController.$inject = ['$filter', '$http', '$q'];

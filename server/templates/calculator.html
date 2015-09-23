@@ -10,7 +10,7 @@
                 <div class="calculator-form__control calculator-form__radio-group input-group">
                     <input type="radio" id="calculator-vehicle-type-0"
                            ng-model="calculator.formData.vehicleType"
-                           ng-change="calculator.updateSummary()" ng-value="0" disabled />
+                           ng-change="calculator.updateSummary()" ng-value="0" />
                     <label for="calculator-vehicle-type-0">
                         <i class="vehicle-icon vehicle-icon-bus">Bus</i>
                     </label>
@@ -56,13 +56,13 @@
                 <select id="calculator-country" class="calculator-form__control"
                         ng-model="calculator.formData.country"
                         ng-change="calculator.updateSummary()"
-                        ng-options="country.name for country in calculator.countries"></select>
+                        ng-options="item.name for item in calculator.countryPrices"></select>
 
                 <div class="calculator-form__field">
                     <label class="calculator-form__label" for="calculator-diesel-price">Diesel price</label>
 
                     <input type="text" id="calculator-diesel-price" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.dieselPrice"
+                           ng-model="calculator.formData.country.dieselPrice"
                            ng-change="calculator.updateSummary()"
                            data-input-number data-input-suffix="$/l" />
                 </div>
@@ -71,7 +71,7 @@
                     <label class="calculator-form__label" for="calculator-electricity-price">Electricity price</label>
 
                     <input type="text" id="calculator-electricity-price" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.electricityPrice"
+                           ng-model="calculator.formData.country.electricityPrice"
                            ng-change="calculator.updateSummary()"
                            data-input-number data-input-suffix="Cents/kWh" />
                 </div>
@@ -80,7 +80,7 @@
                     <label class="calculator-form__label" for="calculator-one-time-subsidy">One time subsidy</label>
 
                     <input type="text" id="calculator-one-time-subsidy" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.oneTimeSubsidy"
+                           ng-model="calculator.formData.country.oneTimeSubsidy"
                            ng-change="calculator.updateSummary()"
                            data-input-number data-input-prefix="$" />
                 </div>
@@ -89,7 +89,7 @@
                     <label class="calculator-form__label" for="calculator-annual-subsidy">Annual subsidy</label>
 
                     <input type="text" id="calculator-annual-subsidy" class="calculator-form__control" disabled
-                           ng-model="calculator.formData.annualSubsidy"
+                           ng-model="calculator.formData.country.annualSubsidy"
                            ng-change="calculator.updateSummary()"
                            data-input-number data-input-prefix="$" />
                 </div>
@@ -180,7 +180,6 @@
                     <label class="calculator-form__label" for="calculator-term">Term</label>
 
                     <input type="text" id="calculator-term" class="calculator-form__control"
-                           ng-disabled="calculator.formData.purchaseOption !== 1"
                            ng-model="calculator.formData.term"
                            ng-change="calculator.updateSummary()"
                            data-input-number data-input-suffix="years" />
@@ -227,10 +226,12 @@
 
             <tr class="">
                 <th>Payback period</th>
-                <td class="calculator-summary__info-payback-period" ng-bind-template="{{calculator.summary.paybackPeriod | floatingNumber : 2}} years"></td>
+                <td class="calculator-summary__info-payback-period"><span ng-show="calculator.summary.paybackPeriod">
+                    {{calculator.summary.paybackPeriod | floatingNumber : 2}} years</span></td>
                 <td></td>
                 <th>Total saving</th>
-                <td class="calculator-summary__info-total-saving" ng-bind-template="$ {{calculator.summary.totalSaving | floatingNumber: 2}}"></td>
+                <td class="calculator-summary__info-total-saving"><span ng-show="calculator.summary.totalSaving">
+                    $ {{calculator.summary.totalSaving | floatingNumber: 2}}</span></td>
             </tr>
         </table>
 
